@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+// This is a highly simplified example and does not implement full Shunting-yard or robust error handling.
+// It demonstrates the concept of handling parentheses in a basic way for a limited expression.
+
+// Function to evaluate a simple expression without nested brackets
+double evaluate_simple_expression(char* expr) {
+    double num1, num2;
+    char op;
+    sscanf(expr, "%lf %c %lf", &num1, &op, &num2); // Basic parsing
+    switch (op) {
+        case '+': return num1 + num2;
+        case '-': return num1 - num2;
+        case '*': return num1 * num2;
+        case '/': return num1 / num2;
+        default: return 0; // Error
+    }
+}
+
+// Function to handle a single level of parentheses
+double evaluate_with_brackets(char* expression) {
+    char* open_bracket = strchr(expression, '(');
+    char* close_bracket = strchr(expression, ')');
+
+    if (open_bracket && close_bracket) {
+        // Extract the sub-expression within the brackets
+        int start_index = open_bracket - expression + 1;
+        int end_index = close_bracket - expression;
+        char sub_expr[100]; // Assuming sub-expression fits
+        strncpy(sub_expr, expression + start_index, end_index - start_index);
+        sub_expr[end_index - start_index] = '\0';
+
+        double sub_result = evaluate_simple_expression(sub_expr);
+
+        // Replace the bracketed part with its result in the original expression
+        char temp_expr[200];
+        strncpy(temp_expr, expression, open_bracket - expression);
+        sprintf(temp_expr + (open_bracket - expression), "%lf%s", sub_result, close_bracket + 1);
+        
+        // Now evaluate the modified expression
+        return evaluate_simple_expression(temp_expr);
+
+    } else {
+        // No brackets, evaluate directly
+        return evaluate_simple_expression(expression);
+    }
+}
+
+int main() {
+    char expression[] = "5 * (10 + 5)";
+    double result = evaluate_with_brackets(expression);
+    printf("Result: %lf\n", result); // Expected: 75.000000
+
+    char expression2[] = "10 + 20";
+    double result2 = evaluate_with_brackets(expression2);
+    printf("Result: %lf\n", result2); // Expected: 30.000000
+
+    return 0;
+}
